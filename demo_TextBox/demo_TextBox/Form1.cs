@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 
 namespace demo_TextBox
 {
@@ -14,6 +15,16 @@ namespace demo_TextBox
     {
         private string _FileName = "";  // the fileName
         private bool _IsSaved = true;   // the file is saved or not.
+
+        private void SaveTextFile(string fileName)
+        {
+            StreamWriter sw = new StreamWriter(fileName);
+            sw.WriteLine(textBox1.Text);
+            sw.Flush();        // 文件流
+            sw.Close();         // 最后要关闭写入状态
+            _IsSaved = true;
+            this.Text = _FileName;
+        }
         private void UpdataRowColsInfo()
         {
             int index = textBox1.GetFirstCharIndexOfCurrentLine();//得到当前行第一个字符的索引
@@ -102,32 +113,84 @@ namespace demo_TextBox
 
         private void Mi_OpenFile_Click(object sender, EventArgs e)
         {
-            if ()
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                System.IO.StreamReader sr;
+                sr = new System.IO.StreamReader(openFileDialog1.FileName, Encoding.UTF8);
+                textBox1.Text = sr.ReadToEnd();
+                sr.Close();
+                _FileName = openFileDialog1.FileName;
+                this.Text = _FileName;
+                _IsSaved = true;
+            }
         }
 
         private void Mi_SaveFile_Click(object sender, EventArgs e)
         {
-
+            if (_FileName=="")
+            {
+                Mi_SaveAs_Click(sender, e);
+            }
+            else
+            {
+                SaveTextFile(_FileName);
+            }
         }
 
         private void Mi_SaveAs_Click(object sender, EventArgs e)
         {
+            if (_FileName == "")
+            {
+                _FileName = this.Text;
 
+                saveFileDialog1.FileName = _FileName;
+                if(saveFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    _FileName = saveFileDialog1.FileName;
+                    SaveTextFile(_FileName);
+                }
+            }
         }
 
         private void Mi_PageSetup_Click(object sender, EventArgs e)
         {
-
+            if (pageSetupDialog1.ShowDialog() == DialogResult.OK)
+            {
+                printDialog1.Document.DefaultPageSettings = pageSetupDialog1.Document.DefaultPageSettings;
+            }
         }
 
         private void Mi_Print_Click(object sender, EventArgs e)
         {
-
+            if (printDialog1.ShowDialog()==DialogResult.OK)
+            {
+                printDialog1.Document.Print();
+            }
         }
 
         private void Mi_Exit_Click(object sender, EventArgs e)
         {
-
+            if(!_IsSaved)
+            {
+                DialogResult dr = MessageBox.Show("文档内容已修改，要保存吗？", "保存提示",MessageBoxButtons.YesNoCancel,MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+                switch(dr)
+                {
+                    case DialogResult.Yes:
+                        Mi_SaveFile_Click(sender, e);
+                        this.Close();
+                        break;
+                    case DialogResult.No:
+                        this.Close();
+                        break;
+                    default:
+                        textBox1.Focus();
+                        break;
+                }
+            }
+            else
+            {
+                this.Close();
+            }
         }
 
         private void Mi_StatusStrip_Click(object sender, EventArgs e)
@@ -140,6 +203,46 @@ namespace demo_TextBox
         {
             ((ToolStripMenuItem)sender).Checked = !((ToolStripMenuItem)sender).Checked;
             textBox1.WordWrap = ((ToolStripMenuItem)sender).Checked;
+        }
+
+        private void mi_Edit_Undo_Click(object sender, EventArgs e)
+        {
+            textBox1.Undo();
+        }
+
+        private void mi_Edit_Copy_Click(object sender, EventArgs e)
+        {
+            textBox1.Copy();
+        }
+
+        private void mi_Edit_Cut_Click(object sender, EventArgs e)
+        {
+            textBox1.Cut();
+        }
+
+        private void mi_Edit_Paste_Click(object sender, EventArgs e)
+        {
+            textBox1.Paste();
+        }
+
+        private void 字体ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            fontDialog1.Font = textBox1.Font;
+            if (fontDialog1.ShowDialog()== DialogResult.OK)
+            {
+                textBox1.Font = fontDialog1.Font;
+            }
+        }
+
+        private void mi_About_Click(object sender, EventArgs e)
+        {
+            //MessageBox.Show("老胡记事本--一个用C#编写的记事小工具 Powered by hoopokfung\n\t\t 2019-05-11 江西南昌", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //(new AboutBox().ShowDialog();
+        }
+
+        private void 复制ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
